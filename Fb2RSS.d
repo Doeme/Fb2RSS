@@ -182,15 +182,15 @@ struct Post{
 		return cont;
 	}
 	
-	@property string link(){
+	@property string link() const{
 		return "https://facebook.com"~href;
 	}
 	
-	@property string id(){
+	@property string id() const{
 		return link();
 	}
 	
-	@property string ISOTime(){
+	@property string ISOTime() const{
 		return time.toISOExtString();
 	}
 	

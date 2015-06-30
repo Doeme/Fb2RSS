@@ -154,14 +154,12 @@ class FBStream : RandomFiniteAssignable!(Post){
 		//rss.addChild(new XmlNode("updated").addCData(posts[0].time.toISOExtString()));
 		foreach(ref Post p; posts){
 			XmlNode e=new XmlNode("entry");
-			e.addChild(new XmlNode("title").addCData(p.time.toString()));
-			e.addChild(new XmlNode("link").setAttribute("href","http://facebook.com"~p.href));
-			e.addChild(new XmlNode("id").addCData("http://facebook.com"~p.href));
-			e.addChild(new XmlNode("published").addCData(p.time.toISOExtString()));
-			e.addChild(new XmlNode("updated").addCData(p.time.toISOExtString()));
-			UCData uc=new UCData();
-			uc.setCData(p.content.toString());
-			e.addChild(new XmlNode("content").setAttribute("type","html").addChild(uc));
+			e.addChild(new XmlNode("title").addCData(p.title));
+			e.addChild(new XmlNode("link").setAttribute("href",p.link));
+			e.addChild(new XmlNode("id").addCData(p.id));
+			e.addChild(new XmlNode("published").addCData(p.ISOTime()));
+			e.addChild(new XmlNode("updated").addCData(p.ISOTime()));
+			e.addChild(new XmlNode("content").setAttribute("type","html").addChild(p.getUCContent()));
 			rss.addChild(e);
 		}
 		into.writeln(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`);
@@ -173,6 +171,29 @@ struct Post{
 	XmlNode content;
 	SysTime time;
 	string href;
+	
+	@property string title(){
+		return time.toString();
+	}
+	
+	@property string link(){
+		return "https://facebook.com"~href;
+	}
+	
+	@property string id(){
+		return link();
+	}
+	
+	@property string ISOTime(){
+		return time.toISOExtString();
+	}
+	
+	@property UCData getUCContent(){
+		UCData uc=new UCData();
+		uc.setCData(content.toString());
+		return uc;
+	}
+	
 }
 
 void main(string args[]){

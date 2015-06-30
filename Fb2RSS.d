@@ -159,7 +159,9 @@ class FBStream : RandomFiniteAssignable!(Post){
 			e.addChild(new XmlNode("id").addCData("http://facebook.com"~p.href));
 			e.addChild(new XmlNode("published").addCData(p.time.toISOExtString()));
 			e.addChild(new XmlNode("updated").addCData(p.time.toISOExtString()));
-			e.addChild(new XmlNode("content").setAttribute("type","text/html").addCData(p.content.toString()));
+			UCData uc=new UCData();
+			uc.setCData(p.content.toString());
+			e.addChild(new XmlNode("content").setAttribute("type","html").addChild(uc));
 			rss.addChild(e);
 		}
 		into.writeln(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`);

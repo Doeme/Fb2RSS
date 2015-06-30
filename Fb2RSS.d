@@ -200,6 +200,20 @@ struct Post{
 		return uc;
 	}
 	
+	int opCmp(ref Post b) const{
+		if(time<b.time){
+			return -1;
+		}
+		else if(time>b.time){
+			return 1;
+		}
+		else{
+			return 0;
+		}
+	}
+	bool opEquals(ref Post b) const{
+		return (opCmp(b)==0);
+	}
 }
 
 void main(string args[]){

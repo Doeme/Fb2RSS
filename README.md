@@ -8,7 +8,7 @@ Compiling
 --------------
 
 - Install a D Compiler and Phobos Runtime
-- Make sure to add ./kxml/source/ as an includepath.
+- Make sure to add ./kxml/source/kxml/xml.d to the input files of the compilercall
 
 Usage
 --------------

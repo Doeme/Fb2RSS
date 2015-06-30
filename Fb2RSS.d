@@ -171,9 +171,15 @@ struct Post{
 	XmlNode content;
 	SysTime time;
 	string href;
+	static ushort title_cutoff=25;
 	
 	@property string title(){
-		return time.toString();
+		string cont=content.getChildren()[0].getCData();
+		if(cont.length>title_cutoff){
+			cont=cont[0..title_cutoff];
+			cont~="...";
+		}
+		return cont;
 	}
 	
 	@property string link(){

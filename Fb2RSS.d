@@ -5,6 +5,7 @@ import std.utf;
 import std.string;
 import std.datetime;
 import std.range;
+import std.file;
 import kxml.xml;
 
 class FBStream : RandomFiniteAssignable!(Post){
@@ -97,9 +98,14 @@ class FBStream : RandomFiniteAssignable!(Post){
 	}
 	
 	public void fetch(){
-		auto h=HTTP();
-	    h.setUserAgent(userAgent);
-		document=cast(string)get(fetch_url,h);
+		if(exists(fetch_url) && isFile(fetch_url)){
+			document=cast(string)read(fetch_url);
+		}
+		else{
+			auto h=HTTP();
+			h.setUserAgent(userAgent);
+			document=cast(string)get(fetch_url,h);
+		}
 	}
 	public void parse(){
 		XmlNode[] arr;

@@ -1,0 +1,3 @@
+[submodule "kxml"]
+	path = kxml
+	url = https://github.com/opticron/kxml.git

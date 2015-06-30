@@ -9,6 +9,7 @@ Compiling
 
 - Install a D Compiler and Phobos Runtime
 - Make sure to add ./kxml/source/kxml/xml.d to the input files of the compilercall
+- You also have to link against libCurl
 
 Usage
 --------------

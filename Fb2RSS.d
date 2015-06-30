@@ -136,6 +136,10 @@ class FBStream : RandomFiniteAssignable!(Post){
 		if(usercontent.length==0){
 			return;
 		}
+		XmlNode[] translatediv=usercontent[0].parseXPath(`/div[@class="_43f9"]`);
+		if(translatediv.length>0){
+			usercontent[0].removeChild(translatediv[0]);
+		}
 		SysTime t=SysTime(unixTimeToStdTime(to!ulong(match.getAttribute("data-time"))));
 		XmlNode[] href=match.parseXPath(`//a[@class="_5pcq"]`);	
 		posts~=Post(usercontent[0],t,href[0].getAttribute("href"));

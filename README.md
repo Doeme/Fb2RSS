@@ -11,6 +11,11 @@ Compiling
 - Make sure to add ./kxml/source/kxml/xml.d to the input files of the compilercall
 - You also have to link against libCurl
 
+With ldc2, the call looks something like
+```shell
+ldc2 Fb2RSS.d kxml/source/kxml/xml.d -L-lcurl
+```
+
 Usage
 --------------
 ```shell

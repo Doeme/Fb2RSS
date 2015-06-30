@@ -1,7 +1,5 @@
 import std.net.curl;
 import std.stdio;
-import std.conv;
-import std.utf;
 import std.string;
 import std.datetime;
 import std.range;

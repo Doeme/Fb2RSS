@@ -17,7 +17,7 @@ class FBStream : RandomFiniteAssignable!(Post){
 	string document;
 	string userAgent="Mozilla/5.0 (Windows NT 6.1; rv:2.0.1) Gecko/20110504 Firefox/7.0.1";
 	XmlNode root;
-	@property RandomFiniteAssignable!(Post) save(){
+	@property FBStream save(){
 		FBStream str=this.clone();
 		str.posts=this.posts.save;
 		return str;
@@ -51,7 +51,7 @@ class FBStream : RandomFiniteAssignable!(Post){
 	@property size_t length(){
 		return posts.length;
 	}
-	RandomFiniteAssignable!(Post) opSlice(size_t a, size_t b){
+	FBStream opSlice(size_t a, size_t b){
 		FBStream str=this.clone();
 		str.posts=this.posts[a..b];
 		return str;

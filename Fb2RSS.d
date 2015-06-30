@@ -145,7 +145,7 @@ class FBStream : RandomFiniteAssignable!(Post){
 		posts~=Post(usercontent[0],t,href[0].getAttribute("href"));
 	}
 	
-	public void generateRSS(File into){
+	private XmlNode generateRSS(){
 		XmlNode rss = new XmlNode("feed");
 		rss.setAttribute("xmlns","http://www.w3.org/2005/Atom");
 		rss.addChild(new XmlNode("id").addCData(url));
@@ -162,6 +162,11 @@ class FBStream : RandomFiniteAssignable!(Post){
 			e.addChild(new XmlNode("content").setAttribute("type","html").addChild(p.getUCContent()));
 			rss.addChild(e);
 		}
+		return rss;
+	}
+	
+	public void writeRSS(File into){
+		XmlNode rss=generateRSS();
 		into.writeln(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`);
 		into.writeln(rss);
 	}
@@ -220,5 +225,5 @@ void main(string args[]){
 	FBStream str=new FBStream(args[1]);
 	str.fetch();
 	str.parse();
-	str.generateRSS(stdout);
+	str.writeRSS(stdout);
 }

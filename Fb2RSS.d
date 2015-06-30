@@ -104,7 +104,9 @@ class FBStream : RandomFiniteAssignable!(Post){
 		else{
 			auto h=HTTP();
 			h.setUserAgent(userAgent);
-			document=cast(string)get(fetch_url,h);
+			h.url=fetch_url;
+			h.onReceive = (ubyte[] data) {document~=cast(string)data; return data.length; };
+			h.perform();
 		}
 	}
 	public void parse(){

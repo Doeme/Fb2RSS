@@ -176,7 +176,7 @@ struct Post{
 	XmlNode content;
 	SysTime time;
 	string href;
-	static ushort title_cutoff=25;
+	static ushort title_cutoff=80;
 	
 	@property string title(){
 		string cont=content.getChildren()[0].getCData();

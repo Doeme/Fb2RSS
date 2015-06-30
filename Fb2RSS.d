@@ -150,8 +150,6 @@ class FBStream : RandomFiniteAssignable!(Post){
 		rss.setAttribute("xmlns","http://www.w3.org/2005/Atom");
 		rss.addChild(new XmlNode("id").addCData(url));
 		rss.addChild(new XmlNode("title").addCData(title));
-		//rss.addChild(new XmlNode("author").addChild(new XmlNode("name").addCData(title)));
-		//rss.addChild(new XmlNode("updated").addCData(posts[0].time.toISOExtString()));
 		foreach(ref Post p; posts){
 			XmlNode e=new XmlNode("entry");
 			e.addChild(new XmlNode("title").addCData(p.title));

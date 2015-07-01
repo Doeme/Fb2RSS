@@ -257,6 +257,7 @@ class FBStream : RandomFiniteAssignable!(Post){
 		rss.setAttribute("xmlns","http://www.w3.org/2005/Atom");
 		rss.addChild(new XmlNode("id").addCData(url));
 		rss.addChild(new XmlNode("title").addCData(title));
+		rss.addChild(new XmlNode("link").setAttribute("href",url));
 		return rss;
 	}
 	

@@ -259,14 +259,7 @@ class FBStream : RandomFiniteAssignable!(Post){
 		rss.addChild(new XmlNode("id").addCData(url));
 		rss.addChild(new XmlNode("title").addCData(title));
 		foreach(ref Post p; posts){
-			XmlNode e=new XmlNode("entry");
-			e.addChild(new XmlNode("title").addCData(p.title));
-			e.addChild(new XmlNode("link").setAttribute("href",p.link));
-			e.addChild(new XmlNode("id").addCData(p.id));
-			e.addChild(new XmlNode("published").addCData(p.ISOTime()));
-			e.addChild(new XmlNode("updated").addCData(p.ISOTime()));
-			e.addChild(new XmlNode("content").setAttribute("type","html").addChild(p.getUCContent()));
-			rss.addChild(e);
+			rss.addChild(p.getEntry());
 		}
 		return rss;
 	}
@@ -341,6 +334,21 @@ struct Post{
 		else{
 			return 0;
 		}
+	}
+	
+	/**
+	 * Generates an Atom-Entry matching the post
+	 * @return The Entry-Node for inclusion inside the Atom-Feed.
+	 */
+	XmlNode getEntry(){
+		XmlNode e=new XmlNode("entry");
+		e.addChild(new XmlNode("title").addCData(title));
+		e.addChild(new XmlNode("link").setAttribute("href",link));
+		e.addChild(new XmlNode("id").addCData(id));
+		e.addChild(new XmlNode("published").addCData(ISOTime()));
+		e.addChild(new XmlNode("updated").addCData(ISOTime()));
+		e.addChild(new XmlNode("content").setAttribute("type","html").addChild(getUCContent()));
+		return e;
 	}
 	
 	bool opEquals(ref Post b) const{

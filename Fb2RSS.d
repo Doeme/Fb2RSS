@@ -249,21 +249,30 @@ class FBStream : RandomFiniteAssignable!(Post){
 	}
 	
 	/**
-	 * Generates an XML-Document which validates as an Atom-Feed corresponding
-	 * to the Facebookpage found in #fetch_url, or the document in #document.
+	 * Generates an XML-Document template to be filled with entries.
 	 * @return The root-node of the Atom-Feed
 	 */
-	private XmlNode generateRSS(){
+	public XmlNode getRSSRoot(){
 		XmlNode rss = new XmlNode("feed");
 		rss.setAttribute("xmlns","http://www.w3.org/2005/Atom");
 		rss.addChild(new XmlNode("id").addCData(url));
 		rss.addChild(new XmlNode("title").addCData(title));
+		return rss;
+	}
+	
+	/**
+	 * Generates an XML-Document which validates as an Atom-Feed corresponding
+	 * to the Facebookpage found in #fetch_url, or the document in #document.
+	 * @return The root-node of the Atom-Feed
+	 */
+	public XmlNode generateRSS(){
+		XmlNode rss = getRSSRoot();
 		foreach(ref Post p; posts){
 			rss.addChild(p.getEntry());
 		}
 		return rss;
 	}
-	
+
 	/**
 	 * Writes a valid Atom-Feed xmlfile to the file specified
 	 * @param into The file to write the feed to

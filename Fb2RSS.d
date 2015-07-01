@@ -37,6 +37,7 @@ import std.string;
 import std.datetime;
 import std.range;
 import std.file;
+import std.utf;
 import kxml.xml;
 
 /**
@@ -307,11 +308,15 @@ struct Post{
 	///The count of characters, until the title gets cut off.
 	static ushort title_cutoff=80;
 	
-	///@return The title of the posting 
+	/**
+	 * @return The title of the posting 
+	 * @bug title_cutoff is reached with fewer characters when there are 
+	 * 	a lot of multibyte characters in the string.
+	 */
 	@property string title(){
 		string cont=content.getChildren()[0].getCData();
 		if(cont.length>title_cutoff){
-			cont=cont[0..title_cutoff];
+			cont=cont[0..toUTFindex(cont,title_cutoff)];
 			cont~="...";
 		}
 		return cont;

@@ -272,6 +272,18 @@ class FBStream : RandomFiniteAssignable!(Post){
 		}
 		return rss;
 	}
+	
+	/**
+	 * @overload generateRSS
+	 * @param r Take the Posts from the range r, instead of #posts
+	 */
+	public XmlNode generateRSS(Range)(Range r) if(isInputRange!(Range)){
+		XmlNode rss = getRSSRoot();
+		foreach(Post p; r){
+			rss.addChild(p.getEntry());
+		}
+		return rss;
+	}
 
 	/**
 	 * Writes a valid Atom-Feed xmlfile to the file specified

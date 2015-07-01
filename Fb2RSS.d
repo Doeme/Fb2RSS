@@ -83,6 +83,13 @@ class FBStream : RandomFiniteAssignable!(Post){
 	Post moveAt(size_t i){
 		return posts.moveAt(i);
 	}
+	
+	/**
+	 * Returns a clone of the current object.
+	 * @warning The members all point to the same data, so if you change 
+	 * 			a member variable of the clone, the parent will change too.
+	 * @return A clone of the current object.
+	 */
 	private FBStream clone(){
 		FBStream str=new FBStream(this.fetch_url);
 		str.url=this.url;

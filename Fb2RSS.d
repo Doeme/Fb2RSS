@@ -64,6 +64,10 @@ class FBStream : RandomFiniteAssignable!(Post){
 	 * "Update your Browser"-Message
 	 */
 	string userAgent="Mozilla/5.0 (Windows NT 6.1; rv:2.0.1) Gecko/20110504 Firefox/7.0.1";
+	
+	///The RSS-Header to append.
+	string rss_header=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`;
+	
 	///The root node
 	XmlNode root; 
 	
@@ -273,7 +277,7 @@ class FBStream : RandomFiniteAssignable!(Post){
 	 */
 	public void writeRSS(File into){
 		XmlNode rss=generateRSS();
-		into.writeln(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`);
+		into.writeln(rss_header);
 		into.writeln(rss);
 	}
 }

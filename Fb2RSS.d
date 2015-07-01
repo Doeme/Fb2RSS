@@ -368,7 +368,6 @@ struct Post{
 		e.addChild(new XmlNode("link").setAttribute("href",link));
 		e.addChild(new XmlNode("id").addCData(id));
 		e.addChild(new XmlNode("published").addCData(ISOTime()));
-		e.addChild(new XmlNode("updated").addCData(ISOTime()));
 		e.addChild(new XmlNode("content").setAttribute("type","html").addChild(getUCContent()));
 		return e;
 	}

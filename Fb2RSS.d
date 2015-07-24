@@ -72,6 +72,9 @@ class FBStream : RandomFiniteAssignable!(Post){
 	///The root node
 	XmlNode root; 
 	
+	///When the fetch request times out
+	public static Duration fetch_timeout=dur!("seconds")(3); //Facebook usually responds really fast.
+	
 	/**
 	 * @brief Functions for the Range-Interface
 	 * 
@@ -195,6 +198,7 @@ class FBStream : RandomFiniteAssignable!(Post){
 		else{
 			auto h=HTTP();
 			h.setUserAgent(userAgent);
+			h.connectTimeout(fetch_timeout);
 			h.url=fetch_url;
 			h.onReceive = (ubyte[] data) {document~=cast(string)data; return data.length; };
 			h.perform();

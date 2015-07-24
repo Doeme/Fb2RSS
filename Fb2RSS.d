@@ -58,7 +58,7 @@ class FBStream : RandomFiniteAssignable!(Post){
 	///The generated data Nodes, which hold all relevant data.
 	XmlNode dataNodes[]; 
 	///The plaintext string holding the whole file
-	string document;	
+	char[] document;	
 	/**
 	 * The useragent to use for requesting the page with facebook.
 	 * Facebook does check this, and if it doesn't know it, it displays an
@@ -190,7 +190,7 @@ class FBStream : RandomFiniteAssignable!(Post){
 	 */
 	public void fetch(){
 		if(exists(fetch_url) && isFile(fetch_url)){
-			document=cast(string)read(fetch_url);
+			document=cast(char[])read(fetch_url);
 		}
 		else{
 			auto h=HTTP();
@@ -205,7 +205,7 @@ class FBStream : RandomFiniteAssignable!(Post){
 	 */
 	public void parse(){
 		XmlNode[] arr;
-		root=readDocument(document);
+		root=readDocument(cast(string)document);
 		arr=root.parseXPath(`//meta[@property="og:url"]`);
 		url=arr[0].getAttribute("content");
 		arr=root.parseXPath(`//meta[@property="og:title"]`);

@@ -1,3 +1,3 @@
-[submodule "kxml"]
-	path = kxml
-	url = https://github.com/opticron/kxml.git
+[submodule "DRSS"]
+	path = DRSS
+	url = https://github.com/Doeme/DRSS.git

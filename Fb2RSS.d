@@ -38,7 +38,10 @@ import std.datetime;
 import std.range;
 import std.file;
 import std.utf;
+import drss.rss;
+import drss.render;
 import kxml.xml;
+import std.typecons;
 
 /**
  * Manages all the relevant tasks of 
@@ -46,19 +49,16 @@ import kxml.xml;
  * - Parsing
  * - Formatting and Outputting
  */
-class FBStream : RandomFiniteAssignable!(Post){
+class FBStream : DRSS!(Post){
 	///Holds all the retrieved posts
 	Post posts[];
-	///Holds the feed url
-	string url;
 	///Holds the url, where we get the data from. Can either be an URL or a filename.
 	private string fetch_url;
-	///The title of the feed
-	string title;
-	///The generated data Nodes, which hold all relevant data.
-	XmlNode dataNodes[]; 
 	///The plaintext string holding the whole file
-	char[] document;	
+	char[] document;
+	
+	DRSS_Header headers[]=[Tuple!(string,string)("url",null),Tuple!(string,string)("title",null)];
+	
 	/**
 	 * The useragent to use for requesting the page with facebook.
 	 * Facebook does check this, and if it doesn't know it, it displays an
@@ -68,152 +68,29 @@ class FBStream : RandomFiniteAssignable!(Post){
 	
 	///The RSS-Header to append.
 	string rss_header=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`;
-	
-	///The root node
-	XmlNode root; 
-	
-	///When the fetch request times out
-	public static Duration fetch_timeout=dur!("seconds")(3); //Facebook usually responds really fast.
-	
-	/**
-	 * @brief Functions for the Range-Interface
-	 * 
-	 * Mostly, they only wrap around the #posts array
-	 */
-	@property FBStream save(){
-		FBStream str=this.clone();
-		str.posts=this.posts.save;
-		return str;
-	}
-	
-	///@copydoc save
-	@property void front(Post newVal){
-		posts~=newVal;
-	}
-	///@copydoc save
-	@property void back(Post newVal){
-		posts=[newVal]~posts;
-	}
-	///@copydoc save
-	void opIndexAssign(Post val, size_t index){
-		posts[index]=val;
-	}
-	///@copydoc save
-	Post opIndex(size_t i){
-		return posts[i];
-	}
-	///@copydoc save
-	Post moveAt(size_t i){
-		return posts.moveAt(i);
-	}
-	
-	/**
-	 * Returns a clone of the current object.
-	 * @warning The members all point to the same data, so if you change 
-	 * 			a member variable of the clone, the parent will change too.
-	 * @return A clone of the current object.
-	 */
-	private FBStream clone(){
-		FBStream str=new FBStream(this.fetch_url);
-		str.url=this.url;
-		str.posts=this.posts;
-		str.title=this.title;
-		str.dataNodes=this.dataNodes;
-		str.document=this.document;
-		str.userAgent=this.userAgent;
-		str.root=this.root;
-		return str;
-	}
-	///@copydoc save
-	@property size_t length(){
-		return posts.length;
-	}
-	///@copydoc save
-	FBStream opSlice(size_t a, size_t b){
-		FBStream str=this.clone();
-		str.posts=this.posts[a..b];
-		return str;
-	}
-	///@copydoc save
-	@property Post back(){
-		return posts.back();
-	}
-	///@copydoc save
-	Post moveBack(){
-		return posts.moveBack();
-	}
-	///@copydoc save
-	void popBack(){
-		posts.popBack();
-	}
-	///@copydoc save
-	int opApply(int delegate(Post) func){
-		int result=0;
-		foreach(ref Post p; posts){
-			result=func(p);
-			if(result) break;
-		}
-		return result;
-	}
-	///@copydoc save
-	int opApply(int delegate(size_t,Post) func){
-		int result=0;
-		foreach(size_t c,ref Post p; posts){
-			result=func(c,p);
-			if(result) break;
-		}
-		return result;
-	}
-	///@copydoc save
-	@property bool empty(){
-		return posts.empty;
-	}
-	///@copydoc save
-	void popFront(){
-		posts.popFront();
-	}
-	///@copydoc save
-	Post moveFront(){
-		return posts.moveFront();
-	}
-	///@copydoc save
-	@property Post front(){
-		return posts.front;
-	}
-	
+
 	/**
 	 *	@param fetch_url Fetch the Data from this source
 	 */
 	this(string fetch_url){
-		this.fetch_url=fetch_url;
+		auto h=HTTP();
+		h.url=fetch_url;
+		h.setUserAgent(userAgent);
+		date_reliability=DateReliable.YES;
+		
+		super(h);
 	}
 	
 	/**
-	 * Fetch the data from #fetch_url, and save it in #document
-	 */
-	public void fetch(){
-		if(exists(fetch_url) && isFile(fetch_url)){
-			document=cast(char[])read(fetch_url);
-		}
-		else{
-			auto h=HTTP();
-			h.setUserAgent(userAgent);
-			h.connectTimeout(fetch_timeout);
-			h.url=fetch_url;
-			h.onReceive = (ubyte[] data) {document~=cast(string)data; return data.length; };
-			h.perform();
-		}
-	}
-	/**
 	 * Parses #document. Afterwords #posts, #root, #dataNodes will be filled.
 	 */
-	public void parse(){
+	override public void parse(string document){
 		XmlNode[] arr;
-		root=readDocument(cast(string)document);
+		XmlNode root=readDocument(document);
 		arr=root.parseXPath(`//meta[@property="og:url"]`);
-		url=arr[0].getAttribute("content");
+		headers[0][1]=arr[0].getAttribute("content");
 		arr=root.parseXPath(`//meta[@property="og:title"]`);
-		title=arr[0].getAttribute("content");
+		headers[1][1]=arr[0].getAttribute("content");
 		
 		XmlNode[] nodes=root.parseXPath(`//code`);
 		generatePosts(nodes);
@@ -228,8 +105,7 @@ class FBStream : RandomFiniteAssignable!(Post){
 			XmlNode subTree=readDocument((cast(XmlComment)(node.getChildren()[0]))._comment);
 			XmlNode[] matches=subTree.parseXPath(`//div[@data-time]`);
 			if(matches.length==0){continue;}
-			dataNodes~=subTree;
-			foreach(ref XmlNode match; matches){
+			foreach(ref XmlNode match; retro(matches)){
 				appendPost(match);
 			}
 		}
@@ -250,56 +126,16 @@ class FBStream : RandomFiniteAssignable!(Post){
 		}
 		SysTime t=SysTime(unixTimeToStdTime(to!ulong(match.getAttribute("data-time"))));
 		XmlNode[] href=match.parseXPath(`//a[@class="_5pcq"]`);	
-		posts~=Post(usercontent[0],t,href[0].getAttribute("href"));
+		addEntry(Post(usercontent[0],t,href[0].getAttribute("href")));
 	}
 	
-	/**
-	 * Generates an XML-Document template to be filled with entries.
-	 * @return The root-node of the Atom-Feed
-	 */
-	public XmlNode getRSSRoot(){
-		XmlNode rss = new XmlNode("feed");
-		rss.setAttribute("xmlns","http://www.w3.org/2005/Atom");
-		rss.addChild(new XmlNode("id").addCData(url));
-		rss.addChild(new XmlNode("title").addCData(title));
-		rss.addChild(new XmlNode("link").setAttribute("href",url));
-		return rss;
+	void writeRSS(File f){
+		import drss.render;
+		XmlNode n=generateRSS(this,headers);
+		writeln(rss_header);
+		writeln(n);
 	}
 	
-	/**
-	 * Generates an XML-Document which validates as an Atom-Feed corresponding
-	 * to the Facebookpage found in #fetch_url, or the document in #document.
-	 * @return The root-node of the Atom-Feed
-	 */
-	public XmlNode generateRSS(){
-		XmlNode rss = getRSSRoot();
-		foreach(ref Post p; posts){
-			rss.addChild(p.getEntry());
-		}
-		return rss;
-	}
-	
-	/**
-	 * @overload generateRSS
-	 * @param r Take the Posts from the range r, instead of #posts
-	 */
-	public XmlNode generateRSS(Range)(Range r) if(isInputRange!(Range)){
-		XmlNode rss = getRSSRoot();
-		foreach(Post p; r){
-			rss.addChild(p.getEntry());
-		}
-		return rss;
-	}
-
-	/**
-	 * Writes a valid Atom-Feed xmlfile to the file specified
-	 * @param into The file to write the feed to
-	 */
-	public void writeRSS(File into){
-		XmlNode rss=generateRSS();
-		into.writeln(rss_header);
-		into.writeln(rss);
-	}
 }
 
 struct Post{
@@ -355,7 +191,7 @@ struct Post{
 	 * Compares the object with b by comparing the dates
 	 * @return -1 if b is bigger, 1 if b is smaller, 0 if they're equal
 	 */
-	int opCmp(ref Post b) const{
+	int opCmp(in ref Post b) const{
 		if(time<b.time){
 			return -1;
 		}
@@ -371,7 +207,7 @@ struct Post{
 	 * Generates an Atom-Entry matching the post
 	 * @return The Entry-Node for inclusion inside the Atom-Feed.
 	 */
-	XmlNode getEntry(){
+	XmlNode toXML(){
 		XmlNode e=new XmlNode("entry");
 		e.addChild(new XmlNode("title").addCData(title));
 		e.addChild(new XmlNode("link").setAttribute("href",link));
@@ -381,14 +217,16 @@ struct Post{
 		return e;
 	}
 	
-	bool opEquals(ref Post b) const{
+	bool opEquals(in ref Post b) const{
+		return (opCmp(b)==0);
+	}
+	bool opEquals(in Post b) const{
 		return (opCmp(b)==0);
 	}
 }
 
 void main(string args[]){
 	FBStream str=new FBStream(args[1]);
-	str.fetch();
-	str.parse();
+	str.update();
 	str.writeRSS(stdout);
 }

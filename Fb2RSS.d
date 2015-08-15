@@ -68,7 +68,9 @@ class FBStream : DRSS!(Post){
 	
 	///The RSS-Header to append.
 	string rss_header=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`;
-
+	
+	immutable string url;
+	
 	/**
 	 *	@param fetch_url Fetch the Data from this source
 	 */
@@ -77,6 +79,7 @@ class FBStream : DRSS!(Post){
 		h.url=fetch_url;
 		h.setUserAgent(userAgent);
 		date_reliability=DateReliable.YES;
+		url=fetch_url;
 		
 		super(h);
 	}
@@ -127,6 +130,16 @@ class FBStream : DRSS!(Post){
 		SysTime t=SysTime(unixTimeToStdTime(to!ulong(match.getAttribute("data-time"))));
 		XmlNode[] href=match.parseXPath(`//a[@class="_5pcq"]`);	
 		addEntry(Post(usercontent[0],t,href[0].getAttribute("href")));
+	}
+	
+	public override bool fetch(){
+		if(exists(url) && isFile(url)){
+			buffer=cast(ubyte[])read(url);
+			return true;
+		}
+		else{
+			return super.fetch();
+		}
 	}
 	
 	void writeRSS(File f){

@@ -10,4 +10,5 @@ Fb2RSS: FbStream.o Fb2RSS.o DRSS/drss.a
 DRSS/drss.a: 
 	cd DRSS/; make drss.a
 clean:
-	rm -f $(DEPS) drss.a drss.so
+	rm -f Fb2RSS *.o 
+	cd DRSS/; make clean

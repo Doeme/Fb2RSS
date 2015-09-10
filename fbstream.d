@@ -94,10 +94,9 @@ class FBStream : DRSS!(Post){
 	override public void parse(string document){
 		XmlNode[] arr;
 		XmlNode root=readDocument(document);
-		arr=root.parseXPath(`//meta[@property="og:url"]`);
-		headers[0][1]=arr[0].getAttribute("content");
-		arr=root.parseXPath(`//meta[@property="og:title"]`);
-		headers[1][1]=arr[0].getAttribute("content");
+		arr=root.parseXPath(`//title`);
+		headers[1][1]=arr[0].getCData().idup;
+		headers[0][1]=url;
 		
 		XmlNode[] nodes=root.parseXPath(`//code`);
 		generatePosts(nodes);

@@ -65,7 +65,7 @@ class FBStream : DRSS!(Post){
 	 * Facebook does check this, and if it doesn't know it, it displays an
 	 * "Update your Browser"-Message
 	 */
-	string userAgent="Mozilla/5.0 (Windows NT 6.1; rv:2.0.1) Gecko/20110504 Firefox/7.0.1";
+	string userAgent="Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.04";
 	
 	///The RSS-Header to append.
 	string rss_header=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`;

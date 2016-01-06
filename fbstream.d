@@ -99,6 +99,7 @@ class FBStream : DRSS!(Post){
 		headers[0][1]=url;
 		
 		XmlNode[] nodes=root.parseXPath(`//code`);
+		assert(nodes.length>0);
 		generatePosts(nodes);
 	}
 	
@@ -132,8 +133,12 @@ class FBStream : DRSS!(Post){
 			usercontent[0].removeChild(translatediv[0]);
 		}
 		SysTime t=SysTime(unixTimeToStdTime(to!ulong(match.getAttribute("data-time"))));
-		XmlNode[] href=match.parseXPath(`//a[@class="_5pcq"]`);	
-		addEntry(Post(usercontent[0],t,href[0].getAttribute("href")));
+		XmlNode[] href=match.parseXPath(`//a[@class="_5pcq"]`);
+		string hrefs;
+		if(href.length!=0){
+			hrefs=href[0].getAttribute("href");
+		}
+		addEntry(Post(usercontent[0],t,hrefs));
 	}
 	
 	/**

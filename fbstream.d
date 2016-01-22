@@ -206,8 +206,8 @@ class FBStream : DRSS!(Post){
 	void writeRSS(File f){
 		import drss.render;
 		XmlNode n=generateRSS(this,headers);
-		writeln(rss_header);
-		writeln(n);
+		f.writeln(rss_header);
+		f.writeln(n);
 	}
 	
 }

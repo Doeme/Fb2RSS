@@ -65,10 +65,10 @@ class FBStream : DRSS!(Post){
 	 * Facebook does check this, and if it doesn't know it, it displays an
 	 * "Update your Browser"-Message
 	 */
-	string userAgent="Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.04";
+	static string userAgent="Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.04";
 	
 	///The RSS-Header to append.
-	string rss_header=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`;
+	static string rss_header=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`;
 	
 	immutable string url;
 	

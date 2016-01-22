@@ -44,6 +44,23 @@ import drss.render;
 import kxml.xml;
 import std.typecons;
 
+	
+string getCookiePath(){
+	import std.path;
+	import standardpaths;
+	string base=writablePath(StandardPath.config);
+	return buildPath(base, "Fb2RSS_cookiejar.txt");
+}
+
+class CaptchaException : Exception{
+	this(string msg, string file=__FILE__, size_t line=__LINE__, Throwable next=null){
+		super(msg,file,line,next);
+	}
+	override string toString(){
+		return msg;
+	}
+}
+
 /**
  * Manages all the relevant tasks of 
  * $(UL
@@ -82,7 +99,21 @@ class FBStream : DRSS!(Post){
 		date_reliability=DateReliable.YES;
 		url=fetch_url;
 		
+		h.setCookieJar(getCookiePath());
+		
 		super(h);
+	}
+	
+	/**
+	* Returns wether the page in buf is already unlocked.
+	* 
+	* Params:
+	* 	buf =	The chararray of the page.
+	* Returns: True if the page is unlocked, false otherwise
+	*/
+	static bool captchaSolved(in char[] buf){
+		import std.algorithm.searching : canFind;
+		return !canFind(buf, "captcha");
 	}
 	
 	/**
@@ -93,7 +124,19 @@ class FBStream : DRSS!(Post){
 	 */
 	override public void parse(string document){
 		XmlNode[] arr;
-		XmlNode root=readDocument(document);
+		XmlNode root;
+		try{
+			root=readDocument(document);
+		}
+		catch(Exception e){
+			if(!captchaSolved(document)){
+				throw new CaptchaException("Captcha has not been solved yet. "
+				"Please run the ./captcha utility");
+			}
+			else{
+				throw e;
+			}
+		}
 		arr=root.parseXPath(`//title`);
 		headers[1][1]=arr[0].getCData().idup;
 		headers[0][1]=url;

@@ -9,6 +9,8 @@ import std.range;
 import std.algorithm.searching;
 
 
+immutable string probe_url="https://www.facebook.com/Facebook";
+
 /**
  * Tries to fetch the captcha and set the cookies
  * 
@@ -18,7 +20,7 @@ int main(string[] args){
 	auto h=HTTP();
 	char[] buf;
 	
-	h.url=args[1];
+	h.url=probe_url;
 	h.setUserAgent(FBStream.userAgent);
 	h.setCookieJar(getCookiePath());
 	h.onReceive = (ubyte[] data){
@@ -63,7 +65,7 @@ int main(string[] args){
 	captcha=captcha[0..$-1]; //Exclude '\n'
 	
 	buf=null;
-	h.url=args[1];
+	h.url=probe_url;
 	h.method=HTTP.Method.post;
 	h.setPostData(
 		format(

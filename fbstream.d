@@ -113,7 +113,7 @@ class FBStream : DRSS!(Post){
 	*/
 	static bool captchaSolved(in char[] buf){
 		import std.algorithm.searching : canFind;
-		return !canFind(buf, "captcha");
+		return !canFind(buf, "tfbimage.php?captcha_challenge_code");
 	}
 	
 	/**

@@ -2,6 +2,8 @@ DMD?=dmd
 OPTS?=-release -O
 IOPTS=$(OPTS) -IDRSS/ -IDRSS/kxml/source/ -Istandardpaths/source/
 
+all: Fb2RSS captcha
+
 Fb2RSS: fbstream.o Fb2RSS.o DRSS/drss.a standardpaths/libstandardpaths.a
 	$(DMD) $(IOPTS) $^ -of$@
 captcha: captcha.o fbstream.o DRSS/drss.a standardpaths/libstandardpaths.a

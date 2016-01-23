@@ -1,4 +1,4 @@
-DMD?=ldmd2
+DMD?=dmd
 OPTS?=-release -O
 IOPTS=$(OPTS) -IDRSS/ -IDRSS/kxml/source/ -Istandardpaths/source/
 

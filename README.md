@@ -14,9 +14,14 @@ make DMD="your-favorite-dmd"
 Usage
 --------------
 ```shell
-./captcha https://facebook.com/<some_page_name>
+./captcha
 ./Fb2RSS https://facebook.com/<page_name>
 ```
 This will write the Atom Feed to stdout, which can be piped to a File, Process, /dev/null, whatever...
-The first command has to be executed only *once*, and can be directed to any page.
+
+Captcha
+-------
+The first command (`./captcha`) has to be executed only *once*.
+Please follow the instructions it gives you.
+
 

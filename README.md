@@ -8,7 +8,7 @@ Compiling
 --------------
 
 ```shell
-make DMD="your-favorite-dmd"
+make
 ```
 
 Usage

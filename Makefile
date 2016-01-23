@@ -16,5 +16,7 @@ standardpaths/libstandardpaths.a: standardpaths/source/standardpaths.o
 DRSS/drss.a: 
 	cd DRSS/; make drss.a
 clean:
-	rm -f Fb2RSS *.o 
+	rm -f *.o standardpaths/source/standardpaths.o
 	cd DRSS/; make clean
+distclean: clean
+	rm -f Fb2RSS captcha

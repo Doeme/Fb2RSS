@@ -141,24 +141,10 @@ class FBStream : DRSS!(Post){
 		headers[1][1]=arr[0].getCData().idup;
 		headers[0][1]=url;
 		
-		XmlNode[] nodes=root.parseXPath(`//code`);
-		assert(nodes.length>0);
-		generatePosts(nodes);
-	}
-	
-	/**
-	 * Generates the posts
-	 * Params: nodes = The `<code></code>` nodes, where the data can be found.
-	 */
-	 
-	private void generatePosts(XmlNode[] nodes){
-		foreach(ref XmlNode node; nodes){
-			XmlNode subTree=readDocument((cast(XmlComment)(node.getChildren()[0]))._comment);
-			XmlNode[] matches=subTree.parseXPath(`//div[@data-time]`);
-			if(matches.length==0){continue;}
-			foreach(ref XmlNode match; retro(matches)){
-				appendPost(match);
-			}
+		XmlNode[] nodes=root.parseXPath(`//div[@class="userContentWrapper _5pcr"]`);
+		assert(nodes.length>0, "No data nodes found!");
+		foreach(node; nodes){
+			appendPost(node);
 		}
 	}
 	
@@ -175,7 +161,7 @@ class FBStream : DRSS!(Post){
 		if(translatediv.length>0){
 			usercontent[0].removeChild(translatediv[0]);
 		}
-		SysTime t=SysTime(unixTimeToStdTime(to!ulong(match.getAttribute("data-time"))));
+		SysTime t=getPostTimestamp(match);
 		XmlNode[] href=match.parseXPath(`//a[@class="_5pcq"]`);
 		string hrefs;
 		if(href.length!=0){
@@ -183,6 +169,17 @@ class FBStream : DRSS!(Post){
 		}
 		addEntry(Post(usercontent[0],t,hrefs));
 	}
+	
+	/**
+	 * Gets the timestamp of a post
+	 * 
+	 */
+	 private SysTime getPostTimestamp(XmlNode post){
+		 XmlNode[] matches=post.parseXPath(`//abbr[@data-utime]`);
+		 assert(matches.length>0, "No date-utime node found in post");
+		 string time=matches[0].getAttribute("data-utime");
+		 return SysTime(unixTimeToStdTime(to!ulong(time)));
+	 }
 	
 	/**
 	 * Fetches the raw-data, either from File or from URL

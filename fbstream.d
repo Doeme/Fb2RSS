@@ -143,7 +143,7 @@ class FBStream : DRSS!(Post){
 		
 		XmlNode[] nodes=root.parseXPath(`//div[@class="userContentWrapper _5pcr"]`);
 		assert(nodes.length>0, "No data nodes found!");
-		foreach(node; nodes){
+		foreach(node; nodes.retro){
 			appendPost(node);
 		}
 	}

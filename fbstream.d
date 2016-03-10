@@ -125,17 +125,10 @@ class FBStream : DRSS!(Post){
 	override public void parse(string document){
 		XmlNode[] arr;
 		XmlNode root;
-		try{
-			root=readDocument(document);
-		}
-		catch(Exception e){
-			if(!captchaSolved(document)){
-				throw new CaptchaException("Captcha has not been solved yet. "
-				"Please run the ./captcha utility");
-			}
-			else{
-				throw e;
-			}
+		root=readDocument(document);
+		if(!captchaSolved(document)){
+			throw new CaptchaException("Captcha has not been solved yet. "
+			"Please run the ./captcha utility");
 		}
 		arr=root.parseXPath(`//title`);
 		headers[1][1]=arr[0].getCData().idup;

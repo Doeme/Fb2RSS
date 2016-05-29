@@ -35,7 +35,7 @@ module fbstream;
 import std.net.curl;
 import std.stdio;
 import std.string;
-import std.datetime;
+import std.datetime : SysTime, unixTimeToStdTime;
 import std.range;
 import std.file;
 import std.utf;

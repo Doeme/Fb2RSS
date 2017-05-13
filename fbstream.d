@@ -148,7 +148,7 @@ class FBStream : DRSS!(Post){
 		headers[1][1]=arr[0].getCData().idup;
 		headers[0][1]=url;
 		
-		XmlNode[] nodes=root.parseXPath(`//div[@class="userContentWrapper _5pcr"]`);
+		XmlNode[] nodes=root.parseXPath(`//div[@class="fbUserContent _5pcr"]`);
 		assert(nodes.length>0, "No data nodes found!");
 		foreach(node; nodes.retro){
 			appendPost(node);

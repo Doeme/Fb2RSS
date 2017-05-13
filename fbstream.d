@@ -125,6 +125,20 @@ class FBStream : DRSS!(Post){
 	override public void parse(string document){
 		XmlNode[] arr;
 		XmlNode root;
+		
+		//Make the HTML valid for the parser
+		import std.regex;
+		/*
+		 * Scripts aren't properly commented, so just replace them with comments
+		 * We don't need them anyways
+		 */
+		auto script_start=ctRegex!"<script[^>]*>";
+		auto script_end=ctRegex!"</script>";
+		document=document.replaceAll(script_start, "<!--").replaceAll(script_end, "-->");
+		
+		//Add important End-Tags
+		document~="</body></HTML>";
+		
 		root=readDocument(document);
 		if(!captchaSolved(document)){
 			throw new CaptchaException("Captcha has not been solved yet. "

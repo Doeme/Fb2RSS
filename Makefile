@@ -14,7 +14,7 @@ standardpaths/libstandardpaths.a: standardpaths/source/standardpaths.o
 	$(DMD) $(IOPTS) -c $< -of$@
 .PHONY:
 DRSS/drss.a: 
-	cd DRSS/; make DMD="$(DMD)" OPTS="$(OPTS) -version=FORGIVING" drss.a
+	cd DRSS/; make DMD="$(DMD)" drss.a
 clean:
 	rm -f *.o standardpaths/source/standardpaths.o
 	cd DRSS/; make clean

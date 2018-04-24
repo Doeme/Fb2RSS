@@ -136,6 +136,14 @@ class FBStream : DRSS!(Post){
 		auto script_end=ctRegex!"</script>";
 		document=document.replaceAll(script_start, "<!--").replaceAll(script_end, "-->");
 		
+		/*
+		 * Now, since the exact class names of facebook always vary, we 
+		 * normalize them to a common denominatory
+		 */
+		auto userContent_normalize=ctRegex!`class="[^"]*(userContentWrapper|userContent)[^"]*"`;
+		document=document
+			.replaceAll(userContent_normalize, `class="$1"`);
+		
 		//Add important End-Tags
 		document~="</body></HTML>";
 		
@@ -148,7 +156,7 @@ class FBStream : DRSS!(Post){
 		headers[1][1]=arr[0].getCData().idup;
 		headers[0][1]=url;
 		
-		XmlNode[] nodes=root.parseXPath(`//div[@class="_5pcr userContentWrapper"]`);
+		XmlNode[] nodes=root.parseXPath(`//div[@class="userContentWrapper"]`);
 		assert(nodes.length>0, "No data nodes found!");
 		foreach(node; nodes.retro){
 			appendPost(node);
@@ -160,7 +168,7 @@ class FBStream : DRSS!(Post){
 	 * Params: match = The data-div node
 	 */
 	private void appendPost(XmlNode match){
-		XmlNode[] usercontent=match.parseXPath(`//div[@class="_5pbx userContent"]`);
+		XmlNode[] usercontent=match.parseXPath(`//div[@class="userContent"]`);
 		if(usercontent.length==0){
 			return;
 		}

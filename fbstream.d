@@ -150,7 +150,7 @@ class FBStream : DRSS!(Post){
 		root=readDocument(document);
 		if(!captchaSolved(document)){
 			throw new CaptchaException("Captcha has not been solved yet. "
-			"Please run the ./captcha utility");
+			~"Please run the ./captcha utility");
 		}
 		arr=root.parseXPath(`//title`);
 		headers[1][1]=arr[0].getCData().idup;

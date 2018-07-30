@@ -241,7 +241,11 @@ struct Post{
 	 * 	a lot of multibyte characters in the string.
 	 */
 	@property string title(){
-		string cont=content.getChildren()[0].getCData();
+		auto children=content.getChildren();
+		if(children.length==0){
+			return "";
+		}
+		string cont=children[0].getCData();
 		if(cont.length>title_cutoff){
 			cont=cont[0..toUTFindex(cont,title_cutoff)];
 			cont~="...";

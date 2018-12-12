@@ -75,7 +75,7 @@ class FBStream : DRSS!(Post){
 	///The plaintext string holding the whole file
 	char[] document;
 	
-	DRSS_Header headers[]=[Tuple!(string,string)("url",null),Tuple!(string,string)("title",null)];
+	DRSS_Header[] headers=[Tuple!(string,string)("url",null),Tuple!(string,string)("title",null)];
 	
 	/**
 	 * The useragent to use for requesting the page with facebook.

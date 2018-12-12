@@ -4,14 +4,17 @@ IOPTS=$(OPTS) -IDRSS/ -IDRSS/kxml/source/ -Istandardpaths/source/
 
 all: Fb2RSS captcha
 
-Fb2RSS: fbstream.o Fb2RSS.o DRSS/drss.a standardpaths/libstandardpaths.a
-	$(DMD) $(IOPTS) $^ -of$@
-captcha: captcha.o fbstream.o DRSS/drss.a standardpaths/libstandardpaths.a
-	$(DMD) $(IOPTS) $^ -of$@
+Fb2RSS: fbstream.o Fb2RSS.o DRSS/drss.a standardpaths/source/standardpaths.d
+	$(DMD) $(IOPTS) -of$@ $^
+
+captcha: standardpaths/libstandardpaths.a captcha.o fbstream.o DRSS/drss.a
+	$(DMD) $(IOPTS) -of$@ $^
+
 standardpaths/libstandardpaths.a: standardpaths/source/standardpaths.o
-	$(DMD) $(IOPTS) -lib $^ -of$@
+	$(DMD) $(IOPTS) -lib -of$@ $^
+
 %.o: %.d
-	$(DMD) $(IOPTS) -c $< -of$@
+	$(DMD) $(IOPTS) -c -of$@ $<
 .PHONY:
 DRSS/drss.a: 
 	cd DRSS/; make DMD="$(DMD)" drss.a

@@ -1,6 +1,6 @@
 [submodule "DRSS"]
 	path = DRSS
-	url = https://github.com/Doeme/DRSS.git
+	url = git://xatko.vsos.ethz.ch/DRSS.git
 [submodule "standardpaths"]
 	path = standardpaths
 	url = https://github.com/MyLittleRobo/standardpaths.git

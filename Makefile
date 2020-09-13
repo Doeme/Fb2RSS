@@ -1,5 +1,5 @@
 DMD?=dmd
-OPTS?=-release -O
+OPTS?=-g
 IOPTS=$(OPTS) -IDRSS/ -IDRSS/kxml/source/ -Istandardpaths/source/
 
 all: Fb2RSS captcha

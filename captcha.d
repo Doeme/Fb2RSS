@@ -6,6 +6,7 @@ import std.path;
 import std.regex;
 import std.format;
 import std.range;
+import std.process;
 import std.algorithm.searching;
 
 
@@ -60,8 +61,11 @@ int main(string[] args){
 	f.close();
 	writeln("The captcha has been written to "~file);
 	writeln("Please enter the text below:");
+	auto pid = spawnProcess(["/usr/bin/pqiv", "-i", file]);
+	
 	char[] captcha;
 	readln(captcha);
+	kill(pid);
 	captcha=captcha[0..$-1]; //Exclude '\n'
 	
 	buf=null;

@@ -43,8 +43,9 @@ import drss.rss;
 import drss.render;
 import kxml.xml;
 import std.typecons;
+import std.conv;
+import std.json;
 
-	
 string getCookiePath(){
 	import std.path;
 	import standardpaths;
@@ -59,6 +60,36 @@ class CaptchaException : Exception{
 	override string toString(){
 		return msg;
 	}
+}
+
+JSONValue search(JSONValue tree, string id){
+	with(JSONType)
+	switch(tree.type){
+		case object:
+			auto o = tree.object;
+			if(id in o){
+				return o[id];
+			}
+			foreach(v; o.byValue){
+				auto nv= search(v, id);
+				if(nv.type != null_){
+					return nv;
+				}
+			}
+		break;
+		case array:
+			foreach(v; tree.array){
+				auto nv= search(v, id);
+				if(nv.type != null_){
+					return nv;
+				}
+			}
+		break;
+		default:
+			return JSONValue.init;
+		break;
+	}
+	return JSONValue.init;
 }
 
 /**
@@ -82,7 +113,7 @@ class FBStream : DRSS!(Post){
 	 * Facebook does check this, and if it doesn't know it, it displays an
 	 * "Update your Browser"-Message
 	 */
-	static string userAgent="Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.04";
+	static string userAgent="curl/7.72.0";
 	
 	///The RSS-Header to append.
 	static string rss_header=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`;
@@ -99,7 +130,7 @@ class FBStream : DRSS!(Post){
 		date_reliability=DateReliable.YES;
 		url=fetch_url;
 		
-		h.setCookieJar(getCookiePath());
+		//h.setCookieJar(getCookiePath());
 		
 		super(h);
 	}
@@ -126,28 +157,8 @@ class FBStream : DRSS!(Post){
 		XmlNode[] arr;
 		XmlNode root;
 		
-		//Make the HTML valid for the parser
-		import std.regex;
-		/*
-		 * Scripts aren't properly commented, so just replace them with comments
-		 * We don't need them anyways
-		 */
-		auto script_start=ctRegex!"<script[^>]*>";
-		auto script_end=ctRegex!"</script>";
-		document=document.replaceAll(script_start, "<!--").replaceAll(script_end, "-->");
-		
-		/*
-		 * Now, since the exact class names of facebook always vary, we 
-		 * normalize them to a common denominatory
-		 */
-		auto userContent_normalize=ctRegex!`class="[^"]*(userContentWrapper|userContent)[^"]*"`;
-		document=document
-			.replaceAll(userContent_normalize, `class="$1"`);
-		
-		//Add important End-Tags
-		document~="</body></HTML>";
-		
 		root=readDocument(document);
+		
 		if(!captchaSolved(document)){
 			throw new CaptchaException("Captcha has not been solved yet. "
 			~"Please run the ./captcha utility");
@@ -156,8 +167,9 @@ class FBStream : DRSS!(Post){
 		headers[1][1]=arr[0].getCData().idup;
 		headers[0][1]=url;
 		
-		XmlNode[] nodes=root.parseXPath(`//div[@class="userContentWrapper"]`);
+		XmlNode[] nodes=root.parseXPath(`//div[@id="recent"]`);
 		assert(nodes.length>0, "No data nodes found!");
+		nodes = nodes[0].getChildren()[0].getChildren()[0].getChildren();
 		foreach(node; nodes.retro){
 			appendPost(node);
 		}
@@ -168,21 +180,29 @@ class FBStream : DRSS!(Post){
 	 * Params: match = The data-div node
 	 */
 	private void appendPost(XmlNode match){
-		XmlNode[] usercontent=match.parseXPath(`//div[@class="userContent"]`);
-		if(usercontent.length==0){
+		XmlNode usercontent;
+		try{
+			usercontent=match.parseXPath(`//div[@style]`)[0];
+		}
+		catch(Exception e){
 			return;
 		}
-		XmlNode[] translatediv=usercontent[0].parseXPath(`/div[@class="_43f9"]`);
-		if(translatediv.length>0){
-			usercontent[0].removeChild(translatediv[0]);
-		}
 		SysTime t=getPostTimestamp(match);
-		XmlNode[] href=match.parseXPath(`//a[@class="_5pcq"]`);
+		XmlNode[] href=match.parseXPath(`//a`);
 		string hrefs;
 		if(href.length!=0){
-			hrefs=href[0].getAttribute("href");
+			hrefs=href[$-1].getAttribute("href");
+			/*
+			import std.regex;
+			auto re = ctRegex!"[^?]+";
+			auto m = hrefs.matchFirst(re);
+			if(m){
+				hrefs = m[0];
+			}
+			*/
 		}
-		addEntry(Post(usercontent[0],t,hrefs));
+		assert(hrefs.length>0);
+		addEntry(Post(usercontent,t,hrefs));
 	}
 	
 	/**
@@ -190,10 +210,11 @@ class FBStream : DRSS!(Post){
 	 * 
 	 */
 	 private SysTime getPostTimestamp(XmlNode post){
-		 XmlNode[] matches=post.parseXPath(`//abbr[@data-utime]`);
-		 assert(matches.length>0, "No date-utime node found in post");
-		 string time=matches[0].getAttribute("data-utime");
-		 return SysTime(unixTimeToStdTime(to!ulong(time)));
+		import std.json;
+		auto attr = post.getAttribute("data-ft");
+		auto json = parseJSON(attr);
+		auto m = search(json, "publish_time");
+		return SysTime(unixTimeToStdTime(m.integer));
 	 }
 	
 	/**
@@ -235,17 +256,25 @@ struct Post{
 	///The count of characters, until the title gets cut off.
 	static ushort title_cutoff=80;
 	
+	static string plaintext(XmlNode n){
+		Appender!string app = Appender!string();
+		plaintext(n, app);
+		return app.data;
+	}
+	static void plaintext(XmlNode n, ref Appender!string app){
+		app~=n.getCData();
+		foreach(c; n.getChildren){
+			plaintext(c, app);
+		}
+	}
+	
 	/**
 	 * Return: The title of the posting 
 	 * Bugs: title_cutoff is reached with fewer characters when there are 
 	 * 	a lot of multibyte characters in the string.
 	 */
 	@property string title(){
-		auto children=content.getChildren();
-		if(children.length==0){
-			return "";
-		}
-		string cont=children[0].getCData();
+		string cont=plaintext(content);
 		if(cont.length>title_cutoff){
 			cont=cont[0..toUTFindex(cont,title_cutoff)];
 			cont~="...";
